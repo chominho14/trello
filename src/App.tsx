@@ -6,8 +6,7 @@ import Board from "./Components/Board";
 
 const Wrqpper = styled.div`
   display: flex;
-  max-width: 680px;
-  width: 100%;
+  width: 100vw;
   margin: 0 auto;
   justify-content: center;
   align-items: center;
@@ -15,24 +14,32 @@ const Wrqpper = styled.div`
 `;
 
 const Boards = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
   gap: 10px;
 `;
 
 function App() {
   const [toDos, setTodos] = useRecoilState(toDoState);
-  const onDragEnd = ({ draggableId, destination, source }: DropResult) => {
-    if (!destination) return;
-    // setTodos((oldToDos) => {
-    //   const toDosCopy = [...oldToDos];
-    //   // 1.source.index에서 아이템을 삭제해준다.
-    //   toDosCopy.splice(source.index, 1);
-    //   // 2.destination.index로 아이템을 다시 돌려두기.
-    //   toDosCopy.splice(destination?.index, 0, draggableId);
-    //   return toDosCopy;
-    // });
+  const onDragEnd = (info: DropResult) => {
+    console.log(info);
+    const { destination, draggableId, source } = info;
+    if (destination?.droppableId === source.droppableId) {
+      // same board movement.
+      setTodos((allBoards) => {
+        const boardCopy = [...allBoards[source.droppableId]];
+        // 1.source.index에서 아이템을 삭제해준다.
+        boardCopy.splice(source.index, 1);
+        // 2.destination.index로 아이템을 다시 돌려두기.
+        boardCopy.splice(destination?.index, 0, draggableId);
+        return {
+          ...allBoards,
+          [source.droppableId]: boardCopy,
+        };
+      });
+    }
   };
 
   return (
