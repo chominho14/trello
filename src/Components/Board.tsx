@@ -1,8 +1,8 @@
-import { useRef } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import { useForm } from "react-hook-form";
+import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
-import { ITodo } from "../atoms";
+import { ITodo, toDoState } from "../atoms";
 import DraggabbleCard from "./DragabbleCard";
 
 const Wrapper = styled.div`
@@ -22,11 +22,6 @@ const Title = styled.h2`
   font-size: 18px;
 `;
 
-interface IAreaProps {
-  isDraggingOver: boolean;
-  isDraggingFromThis: boolean;
-}
-
 const Area = styled.div<IAreaProps>`
   background-color: ${(props) =>
     props.isDraggingOver
@@ -45,6 +40,10 @@ const Form = styled.form`
     width: 100%;
   }
 `;
+interface IAreaProps {
+  isDraggingOver: boolean;
+  isDraggingFromThis: boolean;
+}
 
 interface IBoardProps {
   toDos: ITodo[];
@@ -56,8 +55,22 @@ interface IForm {
 }
 
 function Board({ toDos, boardId }: IBoardProps) {
+  const setToDos = useSetRecoilState(toDoState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const onValid = ({ toDo }: IForm) => {
+    // setValue를 빈 값으로 바꾸기 전에 새로운 toDo object가 만들어져야 된다.
+    const newToDo = {
+      id: Date.now(),
+      text: toDo,
+    };
+    // 모든 보드 더하기 현재 보드에 우리 item이 오는 새로운 array를 더한 값을 리턴
+    setToDos((allBoards) => {
+      return {
+        ...allBoards,
+        [boardId]: [newToDo, ...allBoards[boardId]],
+      };
+    });
+    // 우리가 submit을 할 때 setValue를 toDo를 빈 값으로 바꾼다.
     setValue("toDo", "");
   };
   return (
